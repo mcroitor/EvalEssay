@@ -1,12 +1,31 @@
 <?php
 
 /// <<< FUNCTIONS
+function average(array $numbers): float
+{
+    return count($numbers) === 0 ? 0 : array_sum($numbers) / count($numbers);
+}
+
+function deviation(array $numbers): float
+{
+    if (count($numbers) === 0) {
+        return 0;
+    }
+    $avg = average($numbers);
+    $sum = 0.0;
+    foreach ($numbers as $num) {
+        $sum += pow($num - $avg, 2);
+    }
+    return sqrt($sum / count($numbers));
+}
+
 /**
  * Reads directory and returns lists of sub-folders as models list.
  * @param string $input_dir
  * @return array Array of model names
  */
-function getModelsList(string $input_dir): array {
+function getModelsList(string $input_dir): array
+{
     $models = [];
     $items = scandir($input_dir);
     foreach ($items as $item) {
@@ -27,7 +46,8 @@ function getModelsList(string $input_dir): array {
  * @param string $model
  * @return array Array of assessed essay names
  */
-function listAssessedEssays(string $input_dir, string $model): array {
+function listAssessedEssays(string $input_dir, string $model): array
+{
     $essays = [];
     $modelPath = $input_dir . DIRECTORY_SEPARATOR . $model;
     $items = scandir($modelPath);
@@ -50,7 +70,8 @@ function listAssessedEssays(string $input_dir, string $model): array {
  * @param string $essay Essay name
  * @return array Array of assessment file paths (markdown files)
  */
-function listEssayAssessments(string $input_dir, string $model, string $essay): array {
+function listEssayAssessments(string $input_dir, string $model, string $essay): array
+{
     $essayPath = $input_dir . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $essay;
     $assessments = glob("{$essayPath}/*.md");
     return $assessments;
@@ -65,7 +86,8 @@ function listEssayAssessments(string $input_dir, string $model, string $essay): 
  * @param string $assessmentFile
  * @return int|null
  */
-function extractScoreFromAssessmentFile(string $assessmentFile): ?int {
+function extractScoreFromAssessmentFile(string $assessmentFile): ?int
+{
     $content = file_get_contents($assessmentFile);
     if (preg_match('/Total Score:\s*([0-9]+)/', $content, $matches)) {
         return intval($matches[1]);
@@ -79,7 +101,8 @@ function extractScoreFromAssessmentFile(string $assessmentFile): ?int {
  * @param string $model Model name
  * @return string Markdown formatted report
  */
-function toMarkdown(array $data, string $model): string {
+function toMarkdown(array $data, string $model): string
+{
     $lines = [];
     $lines[] = "# Assessment Statistics for Model: {$model}";
     $lines[] = "";
@@ -98,21 +121,19 @@ function toMarkdown(array $data, string $model): string {
 
     $lines[] = "## Summary Statistics";
     $lines[] = "";
-    $allScores = [];
-    $lines[] = "| Essay | Number of Assessments | Average Score | Min Score | Median | Max Score | Deviation |";
-    $lines[] = "|-------|-----------------------|---------------|-----------|--------|------------|-----------|";
+    $lines[] = "| Essay | Assessments | Average | Min | Max | Deviation |";
+    $lines[] = "|-------|-------------|---------|-----|-----|-----------|";
     foreach ($data as $essay => $scores) {
         $numAssessments = count($scores);
-        $averageScore = $numAssessments > 0 ? array_sum($scores) / $numAssessments : 0;
+        $averageScore = average($scores);
         $minScore = $numAssessments > 0 ? min($scores) : 0;
         $maxScore = $numAssessments > 0 ? max($scores) : 0;
-        $sortedScores = $scores;
-        sort($sortedScores);
-        $median = $numAssessments % 2 == 0
-            ? ($sortedScores[$numAssessments / 2 - 1] + $sortedScores[$numAssessments / 2]) / 2
-            : $sortedScores[floor($numAssessments / 2)];
-        $deviation = sqrt(array_sum(array_map(fn($x) => pow($x - $averageScore, 2), $scores)) / $numAssessments);
-        $allScores = array_merge($allScores, $scores);
+
+        $deviation = deviation($scores);
+        $lines[] = "| {$essay} | {$numAssessments} | "
+            . number_format($averageScore, 2)
+            . " | {$minScore} | {$maxScore} | "
+            . number_format($deviation, 2) . " |";
     }
 
     return implode(PHP_EOL, $lines);
