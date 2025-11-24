@@ -1,0 +1,11 @@
+ARG COMPOSER_VERSION=2.7
+FROM composer:$COMPOSER_VERSION AS builder
+ENV APP_DIR=/composer
+WORKDIR $APP_DIR
+COPY ./site/composer.json $APP_DIR/
+RUN composer install
+
+ARG PHP_VERSION=8.1
+FROM php:$PHP_VERSION-fpm
+COPY --from=builder $APP_DIR/vendor /var/www/html/vendr
+COPY ./site/ /var/www/html/

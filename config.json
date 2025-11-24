@@ -1,0 +1,7 @@
+{
+    "models": ["gemma3:1b"],
+    "task_config": "data/06i004.json",
+    "input_directory": "data/input",
+    "output_directory": "data/output",
+    "nr_iterations": 10
+}
