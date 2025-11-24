@@ -106,12 +106,12 @@ function toMarkdown(array $data, string $model): string {
         $averageScore = $numAssessments > 0 ? array_sum($scores) / $numAssessments : 0;
         $minScore = $numAssessments > 0 ? min($scores) : 0;
         $maxScore = $numAssessments > 0 ? max($scores) : 0;
-        sort($scores);
+        $sortedScores = $scores;
+        sort($sortedScores);
         $median = $numAssessments % 2 == 0
-            ? ($scores[$numAssessments / 2 - 1] + $scores[$numAssessments / 2]) / 2
-            : $scores[floor($numAssessments / 2)];
+            ? ($sortedScores[$numAssessments / 2 - 1] + $sortedScores[$numAssessments / 2]) / 2
+            : $sortedScores[floor($numAssessments / 2)];
         $deviation = sqrt(array_sum(array_map(fn($x) => pow($x - $averageScore, 2), $scores)) / $numAssessments);
-        $lines[] = "| {$essay} | {$numAssessments} | " . number_format($averageScore, 2) . " | {$minScore} | {$median} | {$maxScore} | " . number_format($deviation, 2) . " |";
         $allScores = array_merge($allScores, $scores);
     }
 
