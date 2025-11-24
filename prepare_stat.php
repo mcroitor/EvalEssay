@@ -23,7 +23,7 @@ function getModelsList(string $input_dir): array {
 
 /**
  * Each model has its own folder, that contains folders named by essays assessed.
- * @param string $output_dir
+ * @param string $input_dir
  * @param string $model
  * @return array Array of assessed essay names
  */
