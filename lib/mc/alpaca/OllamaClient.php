@@ -67,6 +67,9 @@ class OllamaClient implements LLMClient
      */
     public function __construct(string $apiUrl, string $modelName = "llama3.2:latest", string $apiKey = "")
     {
+        if (empty($apiUrl)) {
+            throw new \InvalidArgumentException("API URL cannot be empty");
+        }
         $this->apiKey = $apiKey;
         $this->apiUrl = $apiUrl;
         $this->modelName = $modelName;
@@ -114,6 +117,9 @@ class OllamaClient implements LLMClient
      */
     public function setModelName(string $modelName): void
     {
+        if (empty($modelName)) {
+            throw new \InvalidArgumentException("Model name cannot be empty");
+        }
         $this->modelName = $modelName;
     }
 
@@ -135,7 +141,7 @@ class OllamaClient implements LLMClient
         $http->set_write_function(function ($curl, $data) use (&$buffer, $options): int {
             if (!empty($options['stream'])) {
                 $object = json_decode($data);
-                if ($object->response) {
+                if ($object !== null && isset($object->response)) {
                     $buffer .= $object->response;
                     echo $object->response;
                     flush();
@@ -179,6 +185,14 @@ class OllamaClient implements LLMClient
         $response = $http->get();
         $data = json_decode($buffer, true);
 
+        if ($data === null) {
+            throw new \RuntimeException("Failed to parse JSON response from Ollama server");
+        }
+
+        if (!isset($data['models']) || !is_array($data['models'])) {
+            throw new \RuntimeException("Invalid response format from Ollama server: 'models' key not found");
+        }
+
         foreach ($data['models'] as $model) {
             $models[] = $model['name'];
         }
@@ -209,6 +223,9 @@ class OllamaClient implements LLMClient
         );
         if ($response) {
             $data = json_decode($buffer, true);
+            if ($data === null) {
+                throw new \RuntimeException("Failed to parse JSON response for model info");
+            }
             return $data;
         }
         return [];
@@ -231,7 +248,7 @@ class OllamaClient implements LLMClient
     {
         $url = "{$this->apiUrl}/{$endpoint}";
         $buffer = "";
-        $http = self::getHttpClient($url, $buffer, $this->options);
+        $http = self::getHttpClient($url, $buffer, array_merge($this->options, $data));
         $response = $http->post(
             $data
         );
@@ -264,6 +281,10 @@ class OllamaClient implements LLMClient
      */
     public function generate(string $prompt, array $options = []): string
     {
+        if (empty($prompt)) {
+            throw new \InvalidArgumentException("Prompt cannot be empty");
+        }
+        
         $data = [
             "model" => $this->modelName,
             "prompt" => $prompt,
