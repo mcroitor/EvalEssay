@@ -43,6 +43,13 @@ function listAssessedEssays(string $input_dir, string $model): array {
     return $essays;
 }
 
+/**
+ * Lists assessment files for a given essay in a model's directory.
+ * @param string $input_dir Base directory containing model folders
+ * @param string $model Model name
+ * @param string $essay Essay name
+ * @return array Array of assessment file paths (markdown files)
+ */
 function listEssayAssessments(string $input_dir, string $model, string $essay): array {
     $essayPath = $input_dir . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $essay;
     $assessments = glob("{$essayPath}/*.md");
