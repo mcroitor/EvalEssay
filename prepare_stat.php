@@ -99,7 +99,7 @@ function toMarkdown(array $data, string $model): string {
     $lines[] = "## Summary Statistics";
     $lines[] = "";
     $allScores = [];
-    $lines[] = "| Essay | Number of Assessments | Average Score | Min Score | Median |  Max Score | Deviation |";
+    $lines[] = "| Essay | Number of Assessments | Average Score | Min Score | Median | Max Score | Deviation |";
     $lines[] = "|-------|-----------------------|---------------|-----------|--------|------------|-----------|";
     foreach ($data as $essay => $scores) {
         $numAssessments = count($scores);
