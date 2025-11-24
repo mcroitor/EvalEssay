@@ -64,7 +64,7 @@ class Assessor
         $this->template = $template;
         $this->options = [
             'stream' => true,
-            'system' => 'You are an expert essay assessor.',
+            'system' => 'You are an expert essay assessor. You can evaluate essays that describe Dockerfiles.',
             'options' => [
                 'temperature' => 0.2,
                 'top_p' => 0.9

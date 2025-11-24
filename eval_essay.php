@@ -237,7 +237,10 @@ foreach ($models as $model) {
             $score = $assessor->assessEssay($essayTask, $response);
 
             echo "\n";
-            // create student folder if not exists
+            
+            $score = "# Assessment No: {$id}\n\n"
+                    . "## Date: " . date('Y-m-d H:i:s') . "\n\n" 
+                    . $score;
             file_put_contents("{$output_folder}/{$model_name}/{$key}/essay_eval_{$id}.md", $score);
         }
     }
