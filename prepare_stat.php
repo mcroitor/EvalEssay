@@ -99,14 +99,19 @@ function toMarkdown(array $data, string $model): string {
     $lines[] = "## Summary Statistics";
     $lines[] = "";
     $allScores = [];
-    $lines[] = "| Essay | Number of Assessments | Average Score | Min Score | Max Score |";
-    $lines[] = "|-------|-----------------------|---------------|-----------|-----------|";
+    $lines[] = "| Essay | Number of Assessments | Average Score | Min Score | Median | Max Score | Deviation |";
+    $lines[] = "|-------|-----------------------|---------------|-----------|--------|------------|-----------|";
     foreach ($data as $essay => $scores) {
         $numAssessments = count($scores);
         $averageScore = $numAssessments > 0 ? array_sum($scores) / $numAssessments : 0;
         $minScore = $numAssessments > 0 ? min($scores) : 0;
         $maxScore = $numAssessments > 0 ? max($scores) : 0;
-        $lines[] = "| {$essay} | {$numAssessments} | " . number_format($averageScore, 2) . " | {$minScore} | {$maxScore} |";
+        $sortedScores = $scores;
+        sort($sortedScores);
+        $median = $numAssessments % 2 == 0
+            ? ($sortedScores[$numAssessments / 2 - 1] + $sortedScores[$numAssessments / 2]) / 2
+            : $sortedScores[floor($numAssessments / 2)];
+        $deviation = sqrt(array_sum(array_map(fn($x) => pow($x - $averageScore, 2), $scores)) / $numAssessments);
         $allScores = array_merge($allScores, $scores);
     }
 
