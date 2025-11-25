@@ -2,7 +2,7 @@
 
 namespace mc\essay;
 
-use Mc\Sql\Database;
+use mc\Sql\Database;
 
 /**
  * This class writes assessment data in the SQLite database.
@@ -14,7 +14,16 @@ class Report
 );
 
 CREATE TABLE essays (
-    essay_name TEXT UNIQUE
+    essay_name TEXT UNIQUE,
+    output_format TEXT,
+    rubric TEXT,
+    solution TEXT
+);
+
+CREATE TABLE responses (
+    essay_name TEXT,
+    response_id TEXT UNIQUE,
+    response_text TEXT
 );
 
 CREATE TABLE outputs (
@@ -95,13 +104,51 @@ CREATE TABLE outputs (
         return $results;
     }
 
+    public function getResponse(string $responseId): ?string
+    {
+        $result = $this->db->select(
+            'responses',
+            ['response_text'],
+            ['response_id' => $responseId],
+            ["offset" => 0, "limit" => 1]
+        );
+        if (empty($result)) {
+            return null;
+        }
+        return $result[0]['response_text'];
+    }
+
+    public function insertEssay(string $essayName, string $outputFormat = "", string $rubric = "", string $solution = ""): void
+    {
+        if ($this->db->exists('essays', ['essay_name' => $essayName])) {
+            // Essay already exists
+            return;
+        }
+        // Insert essay
+        $this->db->insert('essays', [
+            'essay_name' => $essayName,
+            'output_format' => $outputFormat,
+            'rubric' => $rubric,
+            'solution' => $solution
+        ]);
+    }
+
+    public function insertResponse(string $essayName, string $responseId, string $responseText): void
+    {
+        if ($this->db->exists('responses', ['response_id' => $responseId])) {
+            // Response already exists
+            return;
+        }
+        // Insert response
+        $this->db->insert('responses', [
+            'essay_name' => $essayName,
+            'response_id' => $responseId,
+            'response_text' => $responseText
+        ]);
+    }
+
     public function insertOutput(string $essayName, int $assignmentId, string $outputText): void
     {
-        // Ensure essay is in essays table
-        if (!$this->db->exists('essays', ['essay_name' => $essayName])) {
-            $this->db->insert('essays', ['essay_name' => $essayName]);
-        }
-
         // Insert output
         $this->db->insert('outputs', [
             'model_name' => $this->modelName,

@@ -2,7 +2,7 @@
 
 require_once __DIR__ . "/lib/autoload.php";
 
-use \Mc\Sql\Database;
+use \mc\Sql\Database;
 use \mc\essay\Report;
 
 /// <<< FUNCTIONS

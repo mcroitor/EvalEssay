@@ -61,6 +61,7 @@ function loadTask(string $configFile): Task
     $data = json_decode(file_get_contents($configFile), true);
 
     $taskConfig = [
+        "task_name" => $data['name'] ?? 'Essay Task',
         "task_description" => file_get_contents($basedir . DIRECTORY_SEPARATOR . $data['task']),
         "rubric" => file_get_contents($basedir . DIRECTORY_SEPARATOR . $data['rubric']),
         "output_format" => file_get_contents($basedir . DIRECTORY_SEPARATOR . $data['output_format'])
@@ -215,6 +216,13 @@ foreach ($models as $model) {
     
     // prepare for reporting
     $report = new Report($output_folder, $model);
+
+    // register essay
+    $report->insertEssay($essayTask->getTaskName(), $essayTask->getOutputFormat(), $essayTask->getRubric(), "N/A");
+    // register responses
+    foreach ($responses as $key => $response) {
+        $report->insertResponse($essayTask->getTaskName(), $key, $response);
+    }
 
     // assess the essay
     $step = 0;
