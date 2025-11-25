@@ -1,5 +1,10 @@
 <?php
 
+require_once __DIR__ . "/lib/autoload.php";
+
+use \Mc\Sql\Database;
+use \mc\essay\Report;
+
 /// <<< FUNCTIONS
 function average(array $numbers): float
 {
@@ -27,14 +32,17 @@ function deviation(array $numbers): float
 function getModelsList(string $input_dir): array
 {
     $models = [];
-    $items = scandir($input_dir);
-    foreach ($items as $item) {
-        if ($item === '.' || $item === '..') {
-            continue;
-        }
-        $fullPath = $input_dir . DIRECTORY_SEPARATOR . $item;
-        if (is_dir($fullPath)) {
-            $models[] = $item;
+    $files = glob("{$input_dir}/*.db");
+    foreach ($files as $file) {
+        try {
+            $db = new Database("sqlite:{$file}");
+            $result = $db->query("SELECT name FROM model LIMIT 1");
+            if (!empty($result)) {
+                $models[] = $result[0]['name'];
+            }
+        } catch (\Exception $e) {
+            // Ignore errors
+            echo "[Warning] Could not read model from database file '{$file}': " . $e->getMessage() . PHP_EOL;
         }
     }
     return $models;
@@ -48,18 +56,8 @@ function getModelsList(string $input_dir): array
  */
 function listAssessedEssays(string $input_dir, string $model): array
 {
-    $essays = [];
-    $modelPath = $input_dir . DIRECTORY_SEPARATOR . $model;
-    $items = scandir($modelPath);
-    foreach ($items as $item) {
-        if ($item === '.' || $item === '..') {
-            continue;
-        }
-        $fullPath = $modelPath . DIRECTORY_SEPARATOR . $item;
-        if (is_dir($fullPath)) {
-            $essays[] = $item;
-        }
-    }
+    $report = new Report($input_dir, $model);
+    $essays = $report->getEssays();
     return $essays;
 }
 
@@ -72,23 +70,29 @@ function listAssessedEssays(string $input_dir, string $model): array
  */
 function listEssayAssessments(string $input_dir, string $model, string $essay): array
 {
-    $essayPath = $input_dir . DIRECTORY_SEPARATOR . $model . DIRECTORY_SEPARATOR . $essay;
-    $assessments = glob("{$essayPath}/*.md");
+    $report = new Report($input_dir, $model);
+    $assessments = $report->getAssessments($essay);
     return $assessments;
 }
 
 /**
- * Extracts numeric score from an assessment file.
+ * Extracts numeric score from an assessment.
+ * 
+ * Assessment is provided as an array:
+ * [
+ *      'assignment_id' => <id>,
+ *      'output_text' => <text>
+ * ]
  * 
  * Line format example:
  * Total Score: 10/100 points
  * 
- * @param string $assessmentFile
+ * @param array $assessment
  * @return int|null
  */
-function extractScoreFromAssessmentFile(string $assessmentFile): ?int
+function extractScoreFromAssessment(array $assessment): ?int
 {
-    $content = file_get_contents($assessmentFile);
+    $content = $assessment['output_text'];
     if (preg_match('/Total Score:\s*([0-9]+)/', $content, $matches)) {
         return intval($matches[1]);
     }
@@ -101,19 +105,21 @@ function extractScoreFromAssessmentFile(string $assessmentFile): ?int
  * @param string $model Model name
  * @return string Markdown formatted report
  */
-function toMarkdown(array $data, string $model): string
+function toMarkdown(array $data, string $model, bool $detailed = false): string
 {
     $lines = [];
     $lines[] = "# Assessment Statistics for Model: {$model}";
-    $lines[] = "";
-    $lines[] = "## Detailed Scores";
-    $lines[] = "";
-    $lines[] = "| Essay | Assessment ID | Score |";
-    $lines[] = "|-------|---------------|-------|";
-    foreach ($data as $essay => $scores) {
-        foreach ($scores as $index => $score) {
-            $assessmentId = $index + 1;
-            $lines[] = "| {$essay} | {$assessmentId} | {$score} |";
+    if ($detailed) {
+        $lines[] = "";
+        $lines[] = "## Detailed Scores";
+        $lines[] = "";
+        $lines[] = "| Essay | Assessment ID | Score |";
+        $lines[] = "|-------|---------------|-------|";
+        foreach ($data as $essay => $scores) {
+            foreach ($scores as $index => $score) {
+                $assessmentId = $index + 1;
+                $lines[] = "| {$essay} | {$assessmentId} | {$score} |";
+            }
         }
     }
 
@@ -149,7 +155,10 @@ if (!is_dir($input_dir)) {
     exit(1);
 }
 
+echo "Input directory: {$input_dir}" . PHP_EOL;
 $models = getModelsList($input_dir);
+echo "Found " . count($models) . " models." . PHP_EOL;
+
 $result = [];
 
 foreach ($models as $model) {
@@ -159,10 +168,10 @@ foreach ($models as $model) {
     foreach ($essays as $essay) {
         $result[$model][$essay] = [];
         $assessments = listEssayAssessments($input_dir, $model, $essay);
-        foreach ($assessments as $assessmentFile) {
-            $score = extractScoreFromAssessmentFile($assessmentFile);
+        foreach ($assessments as $assessment) {
+            $score = extractScoreFromAssessment($assessment);
             if ($score !== null) {
-                $result[$model][$essay][] = $score;
+                $result[$model][$essay][$assessment['assignment_id']] = $score;
             }
         }
         $count = count($assessments);
@@ -172,7 +181,8 @@ foreach ($models as $model) {
 
 foreach ($result as $model => $data) {
     $markdown = toMarkdown($data, $model);
-    $outputFile = $input_dir . DIRECTORY_SEPARATOR . $model . "_assessment_stats.md";
+    $filename = str_replace([":", ".", "/"], "_", $model);
+    $outputFile = $input_dir . DIRECTORY_SEPARATOR . $filename . "_assessment_stats.md";
     file_put_contents($outputFile, $markdown);
     echo "Statistics for model '{$model}' written to '{$outputFile}'" . PHP_EOL;
 }
