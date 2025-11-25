@@ -228,7 +228,7 @@ foreach ($models as $model) {
     $step = 0;
     while ($step < $nrIterations) {
         ++$step;
-        foreach ($responses as $key => $response) {     
+        foreach ($responses as $key => $response) {
             // count essay assessments in report
             $essayCount = $report->getNumberOfAssessments($key);
             $id = $essayCount + 1;
