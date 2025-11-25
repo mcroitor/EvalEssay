@@ -81,7 +81,7 @@ CREATE TABLE outputs (
 
     public function getEssays(): array
     {
-        $results = $this->db->selectColumn('essays', 'essay_name', [], ['essay_name' => 'ASC']);
+        $results = $this->db->selectColumn('essays', 'essay_name', [], []);
         return $results;
     }
     public function getAssessments(string $essayName): array
