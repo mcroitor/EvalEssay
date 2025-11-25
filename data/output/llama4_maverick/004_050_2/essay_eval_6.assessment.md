@@ -1,0 +1,18 @@
+# Assessment No: 6
+
+## Date: 2025-11-25 13:15:50
+
+| Nr. | Criterion                                                   | Points | Notes                                                        |
+| --- | ----------------------------------------------------------- | ------ | ------------------------------------------------------------ |
+| 1   | `ARG COMPOSER_VERSION=2.7`                                  | 0      | The `ARG COMPOSER_VERSION=2.7` should be before `FROM composer:${COMPOSER_VERSION}` |
+| 2   | `FROM composer:${COMPOSER_VERSION} AS builder`              | 8      | Missing `AS builder`, typo error                            |
+| 3   | `ENV APP_DIR=/composer`                                     | 10     |                                                              |
+| 4   | `WORKDIR ${APP_DIR}`                                        | 8      | Missing `{}` around `APP_DIR`, typo error                   |
+| 5   | `COPY ./site/composer.json ${APP_DIR}`                      | 8      | Using `--builder` instead of correct `COPY` command and missing `/` at the end, typo error |
+| 6   | `RUN composer install`                                      | 10     |                                                              |
+| 7   | `ARG PHP_VERSION=8.1`                                       | 0      | `ARG PHP_VERSION=8.1` should be before `FROM php:${PHP_VERSION}-fpm` |
+| 8   | `FROM php:${PHP_VERSION}-fpm`                               | 8      | Missing `${PHP_VERSION}`, typo error                        |
+| 9   | `COPY --from=builder /composer/vendor /var/www/html/vendor` | 8      | Using wrong `COPY` command syntax and wrong path, typo error |
+| 10  | `COPY ./site/ /var/www/html/`                               | 8      | Wrong source directory `./site/` instead of `./site/`, typo error |
+
+Total Score: 58/100 points
