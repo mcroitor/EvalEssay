@@ -2,7 +2,7 @@
 
 namespace mc\essay;
 
-use mc\Sql\Database;
+use Mc\Sql\Database;
 
 /**
  * This class writes assessment data in the SQLite database.
