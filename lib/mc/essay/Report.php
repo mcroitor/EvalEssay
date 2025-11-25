@@ -5,7 +5,7 @@ namespace mc\essay;
 use mc\Sql\Database;
 
 /**
- * This class writes assessment data in the Sqlite database.
+ * This class writes assessment data in the SQLite database.
  */
 class Report
 {
