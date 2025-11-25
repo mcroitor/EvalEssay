@@ -6,6 +6,7 @@ include_once __DIR__ . "/lib/autoload.php";
 use mc\alpaca\OllamaClient;
 use \mc\essay\Task;
 use \mc\essay\Assessor;
+use \mc\essay\Report;
 
 /**
  * Prints usage information for the script.
@@ -207,25 +208,21 @@ $logger->info("Starting essay assessments...");
 foreach ($models as $model) {
     $logger->info("Assessing with model: {$model}");
     $client->setModelName($model);
-
+    
     // create the essay assessor
     $assessor = new Assessor($client, $promptTemplate);
     $model_name = str_replace([":", ".", "/"], "_", $model);
-    if (!is_dir("{$output_folder}/{$model_name}")) {
-        mkdir("{$output_folder}/{$model_name}", 0777, true);
-    }
+    
+    // prepare for reporting
+    $report = new Report($output_folder, $model);
 
     // assess the essay
     $step = 0;
     while ($step < $nrIterations) {
         ++$step;
         foreach ($responses as $key => $response) {
-            if (!is_dir("{$output_folder}/{$model_name}/{$key}")) {
-                mkdir("{$output_folder}/{$model_name}/{$key}", 0777, true);
-            }
-            // count essay files in student folder
-            $essayFiles = glob("{$output_folder}/{$model_name}/{$key}/essay_eval_*.md");
-            $essayCount = count($essayFiles);
+            // count essay assessments in report
+            $essayCount = $report->getNumberOfAssessments($key);
             $id = $essayCount + 1;
 
             $logger->info("----------------------");
@@ -241,7 +238,7 @@ foreach ($models as $model) {
             $score = "# Assessment No: {$id}\n\n"
                     . "## Date: " . date('Y-m-d H:i:s') . "\n\n" 
                     . $score;
-            file_put_contents("{$output_folder}/{$model_name}/{$key}/essay_eval_{$id}.md", $score);
+            $report->insertOutput($key, $id, $score);
         }
     }
     $logger->info("======================");
