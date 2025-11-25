@@ -10,13 +10,16 @@ CREATE TABLE model (
 );
 
 CREATE TABLE essays (
-    essay_name TEXT UNIQUE
+    essay_name TEXT UNIQUE,
+    output_format TEXT,
+    rubric TEXT,
+    solution TEXT
 );
 
-CREATE TABLE runs (
-    model_name TEXT,
-    start_time DATETIME,
-    end_time DATETIME
+CREATE TABLE responses (
+    essay_name TEXT,
+    response_id TEXT UNIQUE,
+    response_text TEXT
 );
 
 CREATE TABLE outputs (
