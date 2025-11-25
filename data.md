@@ -1,6 +1,6 @@
 # Data Output Format
 
-THe data is stored in the Sqlite database located at `data/output/*.sqlite3`. For each LLM run, a new database file is created with a LLM name.
+THe data is stored in the Sqlite database located at `data/output/*.db`. For each LLM run, a new database file is created with a LLM name.
 
 The database contains the following tables:
 
