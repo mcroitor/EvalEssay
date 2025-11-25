@@ -161,7 +161,7 @@ class Database
             $query .= " WHERE " . \implode(" AND ", $this->parseWhere($where));
         }
         if (!empty($limit)) {
-            $query .= " LIMIT {$limit['offset']}, {$limit['limit']}";
+            $query .= " LIMIT {$limit['limit']} OFFSET {$limit['offset']}";
         }
         return $this->query($query);
     }
