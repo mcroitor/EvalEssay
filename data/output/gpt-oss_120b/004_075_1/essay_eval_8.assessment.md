@@ -1,19 +1,19 @@
 # Assessment No: 8
 
-## Date: 2025-11-24 18:22:35
+## Date: 2025-11-25 14:12:12
 
 | Nr. | Criterion                                                   | Points | Notes |
 | --- | ----------------------------------------------------------- | ------ | ----- |
 | 1   | `ARG COMPOSER_VERSION=2.7`                                  | 10     | Correct syntax. |
-| 2   | `FROM composer:${COMPOSER_VERSION} AS builder`              | 5      | Uses literal version `2.7` instead of the `${COMPOSER_VERSION}` variable. |
+| 2   | `FROM composer:${COMPOSER_VERSION} AS builder`              | 5      | Uses literal `2.7` instead of the `${COMPOSER_VERSION}` variable. |
 | 3   | `ENV APP_DIR=/composer`                                     | 10     | Correct. |
-| 4   | `WORKDIR ${APP_DIR}`                                        | 0      | Misspelled as `WORK DIR $AP_DIR`; variable name and syntax are incorrect. |
-| 5   | `COPY ./site/composer.json ${APP_DIR}`                      | 10     | Correct (uses `$APP_DIR` which is equivalent). |
+| 4   | `WORKDIR ${APP_DIR}`                                        | 0      | Misspelled as `WORK DIR` and variable typo `$AP_DIR`. |
+| 5   | `COPY ./site/composer.json ${APP_DIR}`                      | 10     | Correct (uses `$APP_DIR/`, which is equivalent). |
 | 6   | `RUN composer install`                                      | 10     | Correct. |
 | 7   | `ARG PHP_VERSION=8.1`                                       | 10     | Correct. |
 | 8   | `FROM php:${PHP_VERSION}-fpm`                               | 5      | Uses literal `8.1-fpm` instead of the `${PHP_VERSION}` variable. |
-| 9   | `COPY --from=builder /composer/vendor /var/www/html/vendor` | 10     | Correct (expands via `${APP_DIR}` to `/composer/vendor`). |
+| 9   | `COPY --from=builder /composer/vendor /var/www/html/vendor` | 10     | Correct (uses `${APP_DIR}` which expands to `/composer`). |
 | 10  | `COPY ./site/ /var/www/html/`                               | 10     | Correct. |
-|     | **Total**                                                   | **80** | No order penalties applied. |
+|     | **Total**                                                   | **80** | |
 
 Total Score: 80/100 points

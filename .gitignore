@@ -1,0 +1,9 @@
+# logs
+*.log
+
+# temp files
+*.tmp
+*.bak
+
+# must secured
+.env

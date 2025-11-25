@@ -1,19 +1,18 @@
 # Assessment No: 4
 
-## Date: 2025-11-24 18:16:31
+## Date: 2025-11-25 14:05:46
 
 | Nr. | Criterion                                                   | Points | Notes |
 | --- | ----------------------------------------------------------- | ------ | ----- |
-| 1   | `ARG COMPOSER_VERSION=2.7`                                  | 10     |       |
-| 2   | `FROM composer:${COMPOSER_VERSION} AS builder`              | 10     | `$COMPOSER_VERSION` is acceptable syntax |
-| 3   | `ENV APP_DIR=/composer`                                     | 10     |       |
-| 4   | `WORKDIR ${APP_DIR}`                                        | 10     | `$APP_DIR` works equivalently |
-| 5   | `COPY ./site/composer.json ${APP_DIR}`                      | 10     | Trailing slash does not affect correctness |
-| 6   | `RUN composer install`                                      | 10     |       |
-| 7   | `ARG PHP_VERSION=8.1`                                       | 10     |       |
-| 8   | `FROM php:${PHP_VERSION}-fpm`                               | 10     | `$PHP_VERSION` is acceptable syntax |
-| 9   | `COPY --from=builder /composer/vendor /var/www/html/vendor` | 8      | Destination typo: `vendr` instead of `vendor` |
-| 10  | `COPY ./site/ /var/www/html/`                               | 10     |       |
-|     | **Total**                                                   | **98** |       |
+| 1   | `ARG COMPOSER_VERSION=2.7`                                  | 10     | Correct |
+| 2   | `FROM composer:${COMPOSER_VERSION} AS builder`              | 8      | Used `$COMPOSER_VERSION` instead of `${COMPOSER_VERSION}` |
+| 3   | `ENV APP_DIR=/composer`                                     | 10     | Correct |
+| 4   | `WORKDIR ${APP_DIR}`                                        | 8      | Used `$APP_DIR` instead of `${APP_DIR}` |
+| 5   | `COPY ./site/composer.json ${APP_DIR}`                      | 8      | Used `$APP_DIR/` and added trailing slash; missing braces |
+| 6   | `RUN composer install`                                      | 10     | Correct |
+| 7   | `ARG PHP_VERSION=8.1`                                       | 10     | Correct |
+| 8   | `FROM php:${PHP_VERSION}-fpm`                               | 8      | Used `$PHP_VERSION` instead of `${PHP_VERSION}` |
+| 9   | `COPY --from=builder /composer/vendor /var/www/html/vendor` | 5      | Used `$APP_DIR` (missing braces) and misspelled destination as `vendr` |
+| 10  | `COPY ./site/ /var/www/html/`                               | 10     | Correct |
 
-Total Score: 98/100 points
+**Total Score:** 87/100 points

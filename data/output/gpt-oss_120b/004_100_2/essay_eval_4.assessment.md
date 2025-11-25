@@ -1,6 +1,6 @@
 # Assessment No: 4
 
-## Date: 2025-11-24 18:16:37
+## Date: 2025-11-25 14:05:53
 
 | Nr. | Criterion                                                   | Points | Notes |
 | --- | ----------------------------------------------------------- | ------ | ----- |
@@ -14,6 +14,5 @@
 | 8   | `FROM php:${PHP_VERSION}-fpm`                               | 10     |       |
 | 9   | `COPY --from=builder /composer/vendor /var/www/html/vendor` | 10     |       |
 | 10  | `COPY ./site/ /var/www/html/`                               | 10     |       |
-|     | **Total**                                                   | **100**|       |
 
 Total Score: 100/100 points
