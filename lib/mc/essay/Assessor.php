@@ -108,6 +108,8 @@ class Assessor
      */
     public function assessEssay(\mc\essay\Task $task, string $studentEssay): string
     {
+        // Intentionally pass an empty string for $studentEssay to build only the system prompt.
+        // The actual student essay is formatted and passed separately to the LLM client below.
         $this->options['system'] = $task->buildPrompt('', $this->template);
 
         $studentEssay = "## Student Response\n\n<student_response>{$studentEssay}</student_response>";
