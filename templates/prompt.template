@@ -17,7 +17,3 @@ Assess the Student Response based on the below rubric and provide scores for eac
 {{output_format}}
 
 No other text outside the table format.
-
-## Student Response
-
-{{student_response}}
