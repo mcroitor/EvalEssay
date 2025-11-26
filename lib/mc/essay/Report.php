@@ -13,24 +13,24 @@ class Report
     name TEXT UNIQUE
 );
 
-CREATE TABLE essays (
-    essay_name TEXT UNIQUE,
+CREATE TABLE tasks (
+    task_name TEXT UNIQUE,
     output_format TEXT,
     rubric TEXT,
     solution TEXT
 );
 
-CREATE TABLE responses (
-    essay_name TEXT,
-    response_id TEXT UNIQUE,
-    response_text TEXT
+CREATE TABLE essays (
+    task_name TEXT,
+    essay_name TEXT UNIQUE,
+    essay_text TEXT
 );
 
-CREATE TABLE outputs (
+CREATE TABLE assessments (
     model_name TEXT,
     essay_name TEXT,
-    assignment_id INTEGER,
-    output_text TEXT
+    assessment_id INTEGER,
+    assessment_text TEXT
 );";
 
     private Database $db;
@@ -81,11 +81,55 @@ CREATE TABLE outputs (
 
     public function getNumberOfAssessments(string $essayName): int
     {
-        $count = $this->db->select('outputs', ["count(*) as CNT"], [
-            'model_name' => $this->modelName,
-            'essay_name' => $essayName
-        ])[0]['CNT'];
+        $count = $this->db->select(
+            'assessments',
+            ["count(*) as CNT"],
+            [
+                'model_name' => $this->modelName,
+                'essay_name' => $essayName
+            ]
+        )[0]['CNT'];
         return $count;
+    }
+
+    public function getAssessments(string $essayName): array
+    {
+        $results = $this->db->select(
+            'assessments',
+            ['*'],
+            ['essay_name' => $essayName],
+            ["offset" => 0, "limit" => 1000]
+        );
+        return $results;
+    }
+
+    public function getTasks(string $taskId): ?string
+    {
+        $result = $this->db->select(
+            'tasks',
+            ['*'],
+            ['task_id' => $taskId],
+            ["offset" => 0, "limit" => 1]
+        );
+        if (empty($result)) {
+            return null;
+        }
+        return $result[0];
+    }
+
+    public function insertTask(string $taskName, string $outputFormat = "", string $rubric = "", string $solution = ""): void
+    {
+        if ($this->db->exists('tasks', ['task_name' => $taskName])) {
+            // task already exists
+            return;
+        }
+        // Insert task
+        $this->db->insert('tasks', [
+            'task_name' => $taskName,
+            'output_format' => $outputFormat,
+            'rubric' => $rubric,
+            'solution' => $solution
+        ]);
     }
 
     public function getEssays(): array
@@ -93,68 +137,29 @@ CREATE TABLE outputs (
         $results = $this->db->selectColumn('essays', 'essay_name', [], []);
         return $results;
     }
-    public function getAssessments(string $essayName): array
-    {
-        $results = $this->db->select(
-            'outputs',
-            ['assignment_id', 'output_text'],
-            ['essay_name' => $essayName],
-            ["offset" => 0, "limit" => 1000]
-        );
-        return $results;
-    }
 
-    public function getResponse(string $responseId): ?string
-    {
-        $result = $this->db->select(
-            'responses',
-            ['response_text'],
-            ['response_id' => $responseId],
-            ["offset" => 0, "limit" => 1]
-        );
-        if (empty($result)) {
-            return null;
-        }
-        return $result[0]['response_text'];
-    }
-
-    public function insertEssay(string $essayName, string $outputFormat = "", string $rubric = "", string $solution = ""): void
+    public function insertEssay(string $taskName, string $essayName, string $essayText): void
     {
         if ($this->db->exists('essays', ['essay_name' => $essayName])) {
-            // Essay already exists
-            return;
-        }
-        // Insert essay
-        $this->db->insert('essays', [
-            'essay_name' => $essayName,
-            'output_format' => $outputFormat,
-            'rubric' => $rubric,
-            'solution' => $solution
-        ]);
-    }
-
-    public function insertResponse(string $essayName, string $responseId, string $responseText): void
-    {
-        if ($this->db->exists('responses', ['response_id' => $responseId])) {
             // Response already exists
             return;
         }
         // Insert response
-        $this->db->insert('responses', [
+        $this->db->insert('essays', [
+            'task_name' => $taskName,
             'essay_name' => $essayName,
-            'response_id' => $responseId,
-            'response_text' => $responseText
+            'essay_text' => $essayText
         ]);
     }
 
-    public function insertOutput(string $essayName, int $assignmentId, string $outputText): void
+    public function insertAssessment(string $essayName, int $assessmentId, string $assessmentText): void
     {
         // Insert output
-        $this->db->insert('outputs', [
+        $this->db->insert('assessments', [
             'model_name' => $this->modelName,
             'essay_name' => $essayName,
-            'assignment_id' => $assignmentId,
-            'output_text' => $outputText
+            'assessment_id' => $assessmentId,
+            'assessment_text' => $assessmentText
         ]);
     }
 }

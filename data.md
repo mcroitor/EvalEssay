@@ -5,27 +5,31 @@ THe data is stored in the Sqlite database located at `data/output/*.db`. For eac
 The database contains the following tables:
 
 ```sql
+-- keep correct model name
 CREATE TABLE model (
     name TEXT UNIQUE
 );
 
-CREATE TABLE essays (
-    essay_name TEXT UNIQUE,
+-- keep list of tasks
+CREATE TABLE tasks (
+    task_name TEXT UNIQUE,
     output_format TEXT,
     rubric TEXT,
     solution TEXT
 );
 
-CREATE TABLE responses (
-    essay_name TEXT,
-    response_id TEXT UNIQUE,
-    response_text TEXT
+-- student responses
+CREATE TABLE essays (
+    task_name TEXT,
+    essay_name TEXT UNIQUE,
+    essay_text TEXT
 );
 
-CREATE TABLE outputs (
+-- AI assessments
+CREATE TABLE assessments (
     model_name TEXT,
     essay_name TEXT,
-    assignment_id INTEGER,
-    output_text TEXT
+    assessment_id INTEGER,
+    assessment_text TEXT
 );
 ```

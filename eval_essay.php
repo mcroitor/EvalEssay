@@ -218,10 +218,10 @@ foreach ($models as $model) {
     $report = new Report($output_folder, $model);
 
     // register essay
-    $report->insertEssay($essayTask->getTaskName(), $essayTask->getOutputFormat(), $essayTask->getRubric(), "N/A");
+    $report->insertTask($essayTask->getTaskName(), $essayTask->getOutputFormat(), $essayTask->getRubric(), "N/A");
     // register responses
     foreach ($responses as $key => $response) {
-        $report->insertResponse($essayTask->getTaskName(), $key, $response);
+        $report->insertEssay($essayTask->getTaskName(), $key, $response);
     }
 
     // assess the essay
@@ -246,7 +246,7 @@ foreach ($models as $model) {
             $score = "# Assessment No: {$id}\n\n"
                     . "## Date: " . date('Y-m-d H:i:s') . "\n\n" 
                     . $score;
-            $report->insertOutput($key, $id, $score);
+            $report->insertAssessment($key, $id, $score);
         }
     }
     $logger->info("======================");
