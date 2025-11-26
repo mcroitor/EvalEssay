@@ -1,4 +1,4 @@
-# Assessment Statistics for Model: llama4:maverick
+# Assessment Statistics for Model: llama3.2:latest
 
 ## Summary Statistics
 
