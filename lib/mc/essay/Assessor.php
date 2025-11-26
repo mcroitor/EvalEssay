@@ -64,7 +64,7 @@ class Assessor
         $this->template = $template;
         $this->options = [
             'stream' => true,
-            'system' => 'You are an expert essay assessor. You can evaluate essays that describe Dockerfiles.',
+            'system' => '',
             'options' => [
                 'temperature' => 0.2,
                 'top_p' => 0.9
@@ -108,9 +108,13 @@ class Assessor
      */
     public function assessEssay(\mc\essay\Task $task, string $studentEssay): string
     {
-        $prompt = $task->buildPrompt($studentEssay, $this->template);
+        // Intentionally pass an empty string for $studentEssay to build only the system prompt.
+        // The actual student essay is formatted and passed separately to the LLM client below.
+        $this->options['system'] = $task->buildPrompt('', $this->template);
 
-        $response = $this->llmClient->generate($prompt, $this->options);
+        $studentEssay = "## Student Response\n\n<student_response>{$studentEssay}</student_response>";
+
+        $response = $this->llmClient->generate($studentEssay, $this->options);
 
         return $response;
     }

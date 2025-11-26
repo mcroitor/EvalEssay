@@ -26,3 +26,10 @@
 If the commands are not in the correct order, a deduction of 2 points will be applied for each misplaced command.
 
 The minimum score is 0 points.
+
+Attention:
+
+- typo errors refer to minor mistakes such as misspellings or incorrect characters that do not significantly alter the command's functionality.
+- the variable names can be used with braces or without braces, e.g., both `$APP_DIR` and `${APP_DIR}` are acceptable.
+- the slashes in the end of the paths are optional, e.g., both `/var/www/html` and `/var/www/html/` are acceptable (if the final object is a directory).
+- literals instead of variables are not accepted, e.g., `FROM composer:2.7` is incorrect.
