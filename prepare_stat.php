@@ -25,7 +25,8 @@ function deviation(array $numbers): float
 }
 
 /**
- * Reads directory and returns lists of sub-folders as models list.
+ * Reads directory on lists of database files.
+ * Reads the model name from each database.
  * @param string $input_dir
  * @return array Array of model names
  */
@@ -49,7 +50,8 @@ function getModelsList(string $input_dir): array
 }
 
 /**
- * Each model has its own folder, that contains folders named by essays assessed.
+ * Each model has its own database file, that contains
+ * assessments for multiple essays.
  * @param string $input_dir
  * @param string $model
  * @return array Array of assessed essay names
@@ -62,11 +64,11 @@ function listAssessedEssays(string $input_dir, string $model): array
 }
 
 /**
- * Lists assessment files for a given essay in a model's directory.
- * @param string $input_dir Base directory containing model folders
+ * Lists essay assessments.
+ * @param string $input_dir Base directory containing model database
  * @param string $model Model name
  * @param string $essay Essay name
- * @return array Array of assessment file paths (markdown files)
+ * @return array Array of assessments data
  */
 function listEssayAssessments(string $input_dir, string $model, string $essay): array
 {
@@ -81,7 +83,7 @@ function listEssayAssessments(string $input_dir, string $model, string $essay): 
  * Assessment is provided as an array:
  * [
  *      'assignment_id' => <id>,
- *      'output_text' => <text>
+ *      'assessment_text' => <text>
  * ]
  * 
  * Line format example:
@@ -92,7 +94,7 @@ function listEssayAssessments(string $input_dir, string $model, string $essay): 
  */
 function extractScoreFromAssessment(array $assessment): ?int
 {
-    $content = $assessment['output_text'];
+    $content = $assessment['assessment_text'];
     if (preg_match('/Total Score:\s*([0-9]+)/', $content, $matches)) {
         return intval($matches[1]);
     }
@@ -171,7 +173,7 @@ foreach ($models as $model) {
         foreach ($assessments as $assessment) {
             $score = extractScoreFromAssessment($assessment);
             if ($score !== null) {
-                $result[$model][$essay][$assessment['assignment_id']] = $score;
+                $result[$model][$essay][$assessment['assessment_id']] = $score;
             }
         }
         $count = count($assessments);
