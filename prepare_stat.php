@@ -6,11 +6,22 @@ use \mc\Sql\Database;
 use \mc\essay\Report;
 
 /// <<< FUNCTIONS
+
+/**
+ * Calculates average of an array of numbers.
+ * @param array $numbers
+ * @return float
+ */
 function average(array $numbers): float
 {
     return count($numbers) === 0 ? 0 : array_sum($numbers) / count($numbers);
 }
 
+/**
+ * Calculates standard deviation of an array of numbers.
+ * @param array $numbers
+ * @return float
+ */
 function deviation(array $numbers): float
 {
     if (count($numbers) === 0) {
@@ -43,7 +54,7 @@ function getModelsList(string $input_dir): array
             }
         } catch (\Exception $e) {
             // Ignore errors
-            echo "[Warning] Could not read model from database file '{$file}': " . $e->getMessage() . PHP_EOL;
+            \mc\Logger::stdout()->warn("[Warning] Could not read model from database file '{$file}': " . $e->getMessage());
         }
     }
     return $models;
@@ -82,7 +93,8 @@ function listEssayAssessments(string $input_dir, string $model, string $essay): 
  * 
  * Assessment is provided as an array:
  * [
- *      'assignment_id' => <id>,
+ *      'essay_name'  => <essay name>,
+ *      'assessment_id' => <id>,
  *      'assessment_text' => <text>
  * ]
  * 
@@ -92,13 +104,33 @@ function listEssayAssessments(string $input_dir, string $model, string $essay): 
  * @param array $assessment
  * @return int|null
  */
-function extractScoreFromAssessment(array $assessment): ?int
+function extractScore(array $assessment): ?int
 {
     $content = $assessment['assessment_text'];
-    if (preg_match('/Total Score:\s*([0-9]+)/', $content, $matches)) {
+    if (preg_match('/([0-9]+)\/100/', $content, $matches)) {
         return intval($matches[1]);
     }
+    \mc\Logger::stdout()->warn("Could not extract score from assessment ID {$assessment['assessment_id']}, essay '{$assessment['essay_name']}'");
     return null;
+}
+
+/**
+ * Extracts criteria scores from an assessment.
+ * @param array $assessment
+ * @return array scores
+ */
+function extractCriteriaScores(array $assessment): array
+{
+    $content = $assessment['assessment_text'];
+    $scores = [];
+    if (preg_match_all('/\|\s+([0-9]+)\s+|/', $content, $matches, PREG_SET_ORDER)) {
+        foreach ($matches as $match) {
+            $scores[] = intval($match[1]);
+        }
+    } else {
+        \mc\Logger::stdout()->warn("Could not extract criteria scores from assessment ID {$assessment['assessment_id']}, essay '{$assessment['essay_name']}'");
+    }
+    return $scores;
 }
 
 /**
@@ -148,36 +180,38 @@ function toMarkdown(array $data, string $model, bool $detailed = false): string
 }
 /// >>>
 
-echo "Preparing assessment statistics..." . PHP_EOL;
+\mc\Logger::stdout()->info("Preparing assessment statistics...");
 
 $input_dir = __DIR__ . "/data/output";
 
 if (!is_dir($input_dir)) {
-    echo "Input directory '{$input_dir}' not found." . PHP_EOL;
+    \mc\Logger::stdout()->error("Input directory '{$input_dir}' not found.");
     exit(1);
 }
 
-echo "Input directory: {$input_dir}" . PHP_EOL;
+\mc\Logger::stdout()->info("Input directory: {$input_dir}");
 $models = getModelsList($input_dir);
-echo "Found " . count($models) . " models." . PHP_EOL;
+\mc\Logger::stdout()->info("Found " . count($models) . " models.");
 
 $result = [];
 
 foreach ($models as $model) {
     $result[$model] = [];
-    echo "Model: " . $model . PHP_EOL;
+    \mc\Logger::stdout()->info("Model: " . $model);
     $essays = listAssessedEssays($input_dir, $model);
     foreach ($essays as $essay) {
         $result[$model][$essay] = [];
         $assessments = listEssayAssessments($input_dir, $model, $essay);
         foreach ($assessments as $assessment) {
-            $score = extractScoreFromAssessment($assessment);
-            if ($score !== null) {
-                $result[$model][$essay][$assessment['assessment_id']] = $score;
+            $score = extractScore($assessment);
+            $result[$model][$essay][$assessment['assessment_id']] = $score ?? 0;
+            $criteriaScores = extractCriteriaScores($assessment);
+            if($score !== array_sum($criteriaScores)) {
+                \mc\Logger::stdout()->warn("Mismatch in criteria scores sum for assessment ID {$assessment['assessment_id']}, essay '{$assessment['essay_name']}'");
             }
         }
         $count = count($assessments);
-        echo " - " . $essay . " (" . $count . " assessments)" . PHP_EOL;
+        \mc\Logger::stdout()->info(" - " . $essay . " (" . $count . " assessments)");
     }
 }
 
@@ -186,7 +220,7 @@ foreach ($result as $model => $data) {
     $filename = str_replace([":", ".", "/"], "_", $model);
     $outputFile = $input_dir . DIRECTORY_SEPARATOR . $filename . "_assessment_stats.md";
     file_put_contents($outputFile, $markdown);
-    echo "Statistics for model '{$model}' written to '{$outputFile}'" . PHP_EOL;
+    \mc\Logger::stdout()->info("Statistics for model '{$model}' written to '{$outputFile}'");
 }
 
-echo "All statistics generated." . PHP_EOL;
+\mc\Logger::stdout()->info("All statistics generated.");
