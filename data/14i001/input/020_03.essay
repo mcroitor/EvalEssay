@@ -1,0 +1,6 @@
+struct Base {
+    var field: integer;
+};
+
+struct Derived: Base {
+};

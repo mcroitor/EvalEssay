@@ -1,7 +1,0 @@
-ARG COMPOSER_VERSION=2.7
-FROM composer:${COMPOSER_VERSION} AS builder
-
-ENV APP_DIR=/composer
-WORKDIR $APP_DIR
-
-COPY ./site/composer.json $APP_DIR/

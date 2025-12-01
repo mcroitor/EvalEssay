@@ -1,0 +1,20 @@
+## Solution example
+
+```cpp
+class Base {
+    int field;
+public:
+    Base(int f) : field(f) {}
+    virtual std::string ToString() {
+        return std::to_string(field);
+    }
+};
+
+class Derived : public Base {
+public:
+    Derived(int f) : Base(f) {}
+    std::string ToString() override {
+        return "field: " + Base::ToString();
+    }
+};
+```

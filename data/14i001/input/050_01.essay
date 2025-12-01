@@ -1,0 +1,8 @@
+class Base {
+    int field;
+public:
+    Base(int f) : field(f) {}
+    virtual std::string ToString() {
+        return std::to_string(field);
+    }
+};

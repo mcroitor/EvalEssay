@@ -107,8 +107,16 @@ function listEssayAssessments(string $input_dir, string $model, string $essay): 
 function extractScore(array $assessment): ?int
 {
     $content = $assessment['assessment_text'];
-    if (preg_match('/([0-9]+)\/100/', $content, $matches)) {
-        return intval($matches[1]);
+    $matches = [];
+    $patterns = [
+        '/Total Score: ([0-9]+)\/100/',
+        '/([0-9]+)\/100/',
+    ];
+    
+    foreach ($patterns as $pattern) {
+        if (preg_match($pattern, $content, $matches)) {
+            return intval($matches[1]);
+        }
     }
     \mc\Logger::stdout()->warn("Could not extract score from assessment ID {$assessment['assessment_id']}, essay '{$assessment['essay_name']}'");
     return null;
@@ -123,7 +131,7 @@ function extractCriteriaScores(array $assessment): array
 {
     $content = $assessment['assessment_text'];
     $scores = [];
-    if (preg_match_all('/\|\s+([0-9]+)\s+|/', $content, $matches, PREG_SET_ORDER)) {
+    if (preg_match_all('/ \|\s+([0-9]+)\s+\|/', $content, $matches, PREG_SET_ORDER)) {
         foreach ($matches as $match) {
             $scores[] = intval($match[1]);
         }
