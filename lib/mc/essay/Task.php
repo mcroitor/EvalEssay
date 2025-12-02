@@ -21,12 +21,12 @@ namespace mc\essay;
  * @example
  * ```php
  * $taskData = [
- *     'task_name' => 'Docker Assignment',
- *     'task_description' => 'Create a docker-compose.yml file',
+ *     'name' => 'Docker Assignment',
+ *     'description' => 'Create a docker-compose.yml file',
  *     'rubric' => '| Criterion | Max Score |\n|-----------|-----------|',
- *     'max_score' => 100
+ *     'solution' => ""
  * ];
- * $task = new Task($taskData, $customTemplate);
+ * $task = new Task($taskData);
  * $prompt = $task->buildPrompt($studentEssay);
  * ```
  */
@@ -37,7 +37,7 @@ class Task
      * 
      * @var string
      */
-    private string $taskName;
+    private string $name;
     
     /**
      * Evaluation rubric in markdown table format
@@ -51,21 +51,28 @@ class Task
      * 
      * @var string
      */
-    private string $taskDescription;
+    private string $description;
     
-    /**
-     * Maximum possible score for the assignment
-     * 
-     * @var int
-     */
-    private int $maxScore;
-
     /**
      * Output format for the assessment
      * 
      * @var string
      */
     private string $output_format;
+    
+    /**
+     * Prompt template for the assessment
+     * 
+     * @var string
+     */
+    private string $prompt_template;
+
+    /**
+     * Path to the essay input files
+     * 
+     * @var string
+     */
+    private string $essay_path;
 
     /**
      * Initialize a new Task instance
@@ -74,21 +81,23 @@ class Task
      * If task data is incomplete, sensible defaults are used.
      * 
      * @param array $task Associative array containing task configuration:
-     *                   - 'task_name' (string): Name of the assignment
-     *                   - 'task_description' (string): Task description
+     *                   - 'name' (string): Name of the assignment
+     *                   - 'description' (string): Task description
      *                   - 'rubric' (string): Evaluation rubric in markdown
-     *                   - 'max_score' (int): Maximum score
-     *                   - 'evaluation_guidelines' (string): Guidelines for evaluators
+     *                   - 'input' (string): input path for essays
+     *                   - 'prompt_template' (string): Prompt template for assessment
+     *                   - 'output_format' (string): Expected output format
      * 
      * @throws \InvalidArgumentException When task array is malformed
      */
     public function __construct(array $task)
     {
-        $this->taskName = $task['task_name'] ?? 'A task';
-        $this->taskDescription = $task['task_description'] ?? '';
+        $this->name = $task['name'] ?? 'A task';
+        $this->description = $task['description'] ?? '';
         $this->rubric = $task['rubric'] ?? '';
-        $this->maxScore = $task['max_score'] ?? 100;
         $this->output_format = $task['output_format'] ?? '';
+        $this->prompt_template = $task['prompt_template'] ?? '';
+        $this->essay_path = $task['input'] ?? '/input/';
     }
 
     /**
@@ -96,9 +105,9 @@ class Task
      * 
      * @return string The configured task name
      */
-    public function getTaskName(): string
+    public function getName(): string
     {
-        return $this->taskName;
+        return $this->name;
     }
     
     /**
@@ -116,19 +125,9 @@ class Task
      * 
      * @return string The detailed task description
      */
-    public function getTaskDescription(): string
+    public function getDescription(): string
     {
-        return $this->taskDescription;
-    }
-    
-    /**
-     * Get the maximum score
-     * 
-     * @return int The maximum possible score for this task
-     */
-    public function getMaxScore(): int
-    {
-        return $this->maxScore;
+        return $this->description;
     }
 
     /**
@@ -140,6 +139,14 @@ class Task
     }
 
     /**
+     * Get essay input path
+     */
+    public function getEssayPath(): string
+    {
+        return $this->essay_path;
+    }
+
+    /**
      * Build assessment prompt for language model
      * 
      * This method processes the prompt template by replacing all placeholder
@@ -147,30 +154,27 @@ class Task
      * prompt is ready to be sent to a language model for assessment.
      * 
      * @param string $studentEssay The student's submission to be evaluated
-     * @param string $template The prompt template with placeholders
      * 
      * @return string Complete assessment prompt ready for LLM
      * 
      * @throws \InvalidArgumentException When studentEssay is empty
      */
-    public function buildPrompt(string $studentEssay, string $template): string
+    public function buildPrompt(string $studentEssay): string
     {
-        $prompt = $template;
+        $prompt = $this->prompt_template;
 
         $from = [
             "{{task_name}}",
             "{{student_response}}",
             "{{rubric}}",
             "{{task_description}}",
-            "{{max_score}}",
             "{{output_format}}"
         ];
         $to = [
-            $this->taskName,
+            $this->name,
             $studentEssay,
             $this->rubric,
-            $this->taskDescription,
-            (string)$this->maxScore,
+            $this->description,
             $this->output_format
         ];
         $prompt = str_replace($from, $to, $prompt);

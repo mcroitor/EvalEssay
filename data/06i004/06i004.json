@@ -3,5 +3,6 @@
     "name": "06i004 Essay Task",
     "rubric": "06i004_rubric.md",
     "solution": "06i004_solution.md",
+    "input": "./input/",
     "output_format": "06i004_output_format.md"
 }
