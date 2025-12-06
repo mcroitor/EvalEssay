@@ -1,0 +1,9 @@
+{
+    "name": "14i001 C++ Inheritance Task",
+    "description": "14i001_task.md",
+    "rubric": "14i001_rubric.md",
+    "solution": "14i001_solution.md",
+    "input": "./input/",
+    "prompt_template": "14i001_prompt_template.md",
+    "output_format": "14i001_output_format.md"
+}

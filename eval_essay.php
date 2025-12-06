@@ -20,10 +20,9 @@ function printUsage(string $scriptName): void
     echo "  -h, --help           Show this help message\n";
     echo "  -c, --config FILE    Path to config file (default: config.json)\n";
     echo "  -s, --server URL     Ollama server URL\n";
-    echo "  -i, --input DIR      Path to input directory\n";
     echo "  -o, --output DIR     Path to output directory\n";
-    echo "  -r, --rubric FILE    Path to rubric file\n";
     echo "  -t, --task FILE      Path to task definition file\n";
+    echo "  -i, --iterations NUM Number of iterations to run\n";
     echo "  -m, --models LIST    Comma-separated list of models to use\n";
 }
 
@@ -59,12 +58,18 @@ function loadTask(string $configFile): Task
 {
     $basedir = dirname($configFile);
     $data = json_decode(file_get_contents($configFile), true);
+    $promptTemplatePath =  __DIR__ . "/templates/prompt.template";
+    if(isset($data['prompt_template'])) {
+        $promptTemplatePath = $basedir . DIRECTORY_SEPARATOR . $data['prompt_template'];
+    }
 
     $taskConfig = [
-        "task_name" => $data['name'] ?? 'Essay Task',
-        "task_description" => file_get_contents($basedir . DIRECTORY_SEPARATOR . $data['task']),
+        "name" => $data['name'] ?? 'Essay Task',
+        "description" => file_get_contents($basedir . DIRECTORY_SEPARATOR . $data['description']),
         "rubric" => file_get_contents($basedir . DIRECTORY_SEPARATOR . $data['rubric']),
-        "output_format" => file_get_contents($basedir . DIRECTORY_SEPARATOR . $data['output_format'])
+        "input" => $basedir . DIRECTORY_SEPARATOR . ($data['input'] ?? "input"),
+        "output_format" => file_get_contents($basedir . DIRECTORY_SEPARATOR . $data['output_format']),
+        "prompt_template" => file_get_contents($promptTemplatePath)
     ];
     return new Task($taskConfig);
 }
@@ -78,22 +83,20 @@ function parseCommandLineArgs(array $options): array
     if (isset($options['s']) || isset($options['server'])) {
         $config['ollama_server'] = $options['server'] ?? $options['s'];
     }
-    if (isset($options['i']) || isset($options['input'])) {
-        $config['input_directory'] = $options['input'] ?? $options['i'];
-    }
     if (isset($options['o']) || isset($options['output'])) {
-        $config['output_directory'] = $options['output'] ?? $options['o'];
-    }
-    if (isset($options['r']) || isset($options['rubric'])) {
-        $config['rubric_file'] = $options['rubric'] ?? $options['r'];
+        $config['output'] = $options['output'] ?? $options['o'];
     }
     if (isset($options['t']) || isset($options['task'])) {
-        $config['task_config'] = $options['task'] ?? $options['t'];
+        $config['task'] = $options['task'] ?? $options['t'];
+    }
+    if (isset($options['i']) || isset($options['iterations'])) {
+        $config['nr_iterations'] = intval($options['iterations'] ?? $options['i']);
     }
     if (isset($options['m']) || isset($options['models'])) {
         $modelsString = $options['models'] ?? $options['m'];
         $config['models'] = array_map('trim', explode(',', $modelsString));
     }
+    \mc\Logger::stdout()->info("Command line configuration overrides: " . json_encode($config));
     return $config;
 }
 
@@ -101,19 +104,18 @@ function parseCommandLineArgs(array $options): array
 $logger = \mc\Logger::stdout();
 
 // Parse command line arguments using getopt
-$shortopts = "hc:s:i:o:r:t:m:";
-$longopts = [
+$short_opts = "hc:s:o:t:i:m:";
+$long_opts = [
     "help",
     "config:",
     "server:",
-    "input:",
     "output:",
-    "rubric:",
     "task:",
+    "iterations:",
     "models:"
 ];
 
-$options = getopt($shortopts, $longopts);
+$options = getopt($short_opts, $long_opts);
 
 // Handle help option
 if (isset($options['h']) || isset($options['help'])) {
@@ -144,6 +146,8 @@ if (file_exists($configFile)) {
 // Merge CLI arguments with config file (CLI arguments override config file)
 $config = array_merge($config, $cliConfig);
 
+\mc\Logger::stdout()->info("Command line configuration overrides: " . json_encode($config));
+
 $nrIterations = $config['nr_iterations'] ?? 10;
 
 // ollama server URL
@@ -171,8 +175,8 @@ if (empty($models)) {
 $logger->info("Using models: " . implode(", ", $models));
 
 // output folder
-$output_folder = isset($config['output_directory']) ?
-    (is_absolute_path($config['output_directory']) ? $config['output_directory'] : __DIR__ . "/" . $config['output_directory']) :
+$output_folder = isset($config['output']) ?
+    (is_absolute_path($config['output']) ? $config['output'] : __DIR__ . "/" . $config['output']) :
     __DIR__ . "/output";
 if (!is_dir($output_folder)) {
     mkdir($output_folder, 0777, true);
@@ -180,21 +184,19 @@ if (!is_dir($output_folder)) {
 $logger->info("Output directory: {$output_folder}");
 
 // define the essay task
-if (!isset($config['task_config'])) {
-    $logger->error("Task configuration file not specified. Use -t or --task option, or set 'task_config' in config.json");
+if (!isset($config['task'])) {
+    $logger->error("Task configuration file not specified. Use -t or --task option, or set 'task' in config.json");
     exit(1);
 }
-$essayTask = loadTask($config['task_config']);
-$promptTemplate = file_get_contents(__DIR__ . "/templates/prompt.template");
+$essayTask = loadTask($config['task']);
 
 $logger->info("Essay task prompt:");
 
-echo $essayTask->buildPrompt("", $promptTemplate);
+echo $essayTask->buildPrompt("");
 
 $logger->info("Loading essay responses...");
-$input_folder = isset($config['input_directory']) ?
-    (is_absolute_path($config['input_directory']) ? $config['input_directory'] : __DIR__ . "/" . $config['input_directory']) :
-    __DIR__ . "/data/input";
+
+$input_folder = $essayTask->getEssayPath();
 
 if (!is_dir($input_folder)) {
     $logger->error("Input directory '{$input_folder}' not found");
@@ -209,19 +211,19 @@ $logger->info("Starting essay assessments...");
 foreach ($models as $model) {
     $logger->info("Assessing with model: {$model}");
     $client->setModelName($model);
-    
+
     // create the essay assessor
-    $assessor = new Assessor($client, $promptTemplate);
+    $assessor = new Assessor($client);
     $model_name = str_replace([":", ".", "/"], "_", $model);
-    
+
     // prepare for reporting
     $report = new Report($output_folder, $model);
 
     // register essay
-    $report->insertTask($essayTask->getTaskName(), $essayTask->getOutputFormat(), $essayTask->getRubric(), "N/A");
+    $report->insertTask($essayTask->getName(), $essayTask->getOutputFormat(), $essayTask->getRubric(), "N/A");
     // register responses
     foreach ($responses as $key => $response) {
-        $report->insertEssay($essayTask->getTaskName(), $key, $response);
+        $report->insertEssay($essayTask->getName(), $key, $response);
     }
 
     // assess the essay
@@ -242,10 +244,10 @@ foreach ($models as $model) {
             $score = $assessor->assessEssay($essayTask, $response);
 
             echo "\n";
-            
+
             $score = "# Assessment No: {$id}\n\n"
-                    . "## Date: " . date('Y-m-d H:i:s') . "\n\n" 
-                    . $score;
+                . "## Date: " . date('Y-m-d H:i:s') . "\n\n"
+                . $score;
             $report->insertAssessment($key, $id, $score);
         }
     }

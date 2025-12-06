@@ -3,7 +3,6 @@
 namespace mc\essay;
 
 use mc\alpaca\OllamaClient;
-use \mc\alpaca\OllamaResponse;
 
 /**
  * Essay Assessment Service
@@ -26,7 +25,7 @@ use \mc\alpaca\OllamaResponse;
  * $client = new OllamaClient('http://localhost:11434', 'llama3.2:latest');
  * $assessor = new Assessor($client);
  * 
- * $task = new Task($taskData, $template);
+ * $task = new Task($taskData);
  * $evaluation = $assessor->assessEssay($task, $studentSubmission);
  * echo $evaluation; // LLM-generated assessment
  * ```
@@ -45,12 +44,6 @@ class Assessor
      * @var array
      */
     private array $options = [];
-    /**
-     * Prompt template used for generating assessment prompts.
-     * 
-     * @var string
-     */
-    private string $template;
 
     /**
      * Initialize the assessment service
@@ -58,10 +51,9 @@ class Assessor
      * @param OllamaClient $llmClient Configured LLM client for generating assessments
      * @param string $template Prompt template for assessment
      */
-    public function __construct(OllamaClient $llmClient, string $template)
+    public function __construct(OllamaClient $llmClient)
     {
         $this->llmClient = $llmClient;
-        $this->template = $template;
         $this->options = [
             'stream' => true,
             'system' => '',
@@ -110,7 +102,7 @@ class Assessor
     {
         // Intentionally pass an empty string for $studentEssay to build only the system prompt.
         // The actual student essay is formatted and passed separately to the LLM client below.
-        $this->options['system'] = $task->buildPrompt('', $this->template);
+        $this->options['system'] = $task->buildPrompt('');
 
         $studentEssay = "## Student Response\n\n<student_response>{$studentEssay}</student_response>";
 

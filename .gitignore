@@ -7,3 +7,6 @@
 
 # must secured
 .env
+
+# some directories
+phpliteadmin/

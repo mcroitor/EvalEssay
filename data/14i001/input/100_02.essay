@@ -1,0 +1,17 @@
+class Base {
+protected:
+    int field;
+public:
+    Base(int f) : field(f) {}
+    virtual std::string ToString() const {
+        return std::to_string(field);
+    }
+};
+
+class Derived : public Base {
+public:
+    Derived(int f) : Base(f) {}
+    std::string ToString() const override {
+        return "field: " + Base::ToString();
+    }
+};

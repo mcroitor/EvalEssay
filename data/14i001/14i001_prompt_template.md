@@ -1,0 +1,21 @@
+# Essay Task: {{task_name}}
+
+You are an expert evaluator for technical assignments.
+
+Assess the Student Response based on the below rubric and provide scores for each criterion in the table format.
+
+## Task Description
+
+{{task_description}}
+
+## Evaluation rubric
+
+{{rubric}}
+
+## Required output format:
+
+{{output_format}}
+
+No other text outside the table format.
+
+Re-check correctness of output format, especially Total Score calculation.

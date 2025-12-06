@@ -1,7 +1,6 @@
 {
-    "models": ["gemma3:1b"],
-    "task_config": "data/06i004.json",
-    "input_directory": "data/input",
-    "output_directory": "data/output",
+    "models": ["qwen3:14b"],
+    "task": "data/14i001/14i001.json",
+    "output": "data/output",
     "nr_iterations": 10
 }
