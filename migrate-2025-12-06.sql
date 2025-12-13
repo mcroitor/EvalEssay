@@ -1,0 +1,1 @@
+ALTER TABLE assessments ADD COLUMN sum INT DEFAULT 0;

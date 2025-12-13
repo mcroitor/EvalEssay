@@ -122,6 +122,11 @@ function extractScore(array $assessment): ?int
     return null;
 }
 
+function updateScore(string $input_dir, string $model, string $essayName, int $score, int $sum): void{
+    $report = new Report($input_dir, $model);
+    $report->updateAssessmentScore($essayName, $score, $sum);
+}
+
 /**
  * Extracts criteria scores from an assessment.
  * @param array $assessment
@@ -211,12 +216,14 @@ foreach ($models as $model) {
         $result[$model][$essay] = [];
         $assessments = listEssayAssessments($input_dir, $model, $essay);
         foreach ($assessments as $assessment) {
-            $score = extractScore($assessment);
-            $result[$model][$essay][$assessment['assessment_id']] = $score ?? 0;
+            $score = extractScore($assessment) ?? 0;
+            $result[$model][$essay][$assessment['assessment_id']] = $score;
             $criteriaScores = extractCriteriaScores($assessment);
-            if($score !== array_sum($criteriaScores)) {
+            $sum = array_sum($criteriaScores);
+            if($score !== $sum) {
                 \mc\Logger::stdout()->warn("Mismatch in criteria scores sum for assessment ID {$assessment['assessment_id']}, essay '{$assessment['essay_name']}'");
             }
+            updateScore($input_dir, $model, $assessment['essay_name'], $score, $sum);
         }
         $count = count($assessments);
         \mc\Logger::stdout()->info(" - " . $essay . " (" . $count . " assessments)");

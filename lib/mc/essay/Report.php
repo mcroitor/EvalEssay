@@ -30,7 +30,9 @@ CREATE TABLE assessments (
     model_name TEXT,
     essay_name TEXT,
     assessment_id INTEGER,
-    assessment_text TEXT
+    assessment_text TEXT,
+    score INTEGER DEFAULT 0,
+    sum INTEGER DEFAULT 0
 );";
 
     private Database $db;
@@ -161,5 +163,17 @@ CREATE TABLE assessments (
             'assessment_id' => $assessmentId,
             'assessment_text' => $assessmentText
         ]);
+    }
+
+    public function updateAssessmentScore(string $essayName, int $score, int $sum): void
+    {
+        $this->db->update(
+            'assessments',
+            ['score' => $score, 'sum' => $sum],
+            [
+                'model_name' => $this->modelName,
+                'essay_name' => $essayName
+            ]
+        );
     }
 }
