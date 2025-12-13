@@ -1,0 +1,6 @@
+{
+    "models": ["ministral-3:8b"],
+    "task": "data/14i001/14i001.json",
+    "output": "data/output",
+    "nr_iterations": 10
+}
