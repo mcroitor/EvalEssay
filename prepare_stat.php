@@ -109,8 +109,9 @@ function extractScore(array $assessment): ?int
     $content = $assessment['assessment_text'];
     $matches = [];
     $patterns = [
-        '/Total Score: ([0-9]+)\/100/',
-        '/([0-9]+)\/100/',
+        '/Total Score: ([0-9]+)\/100/', // Total Score: 10/100 points
+        '/([0-9]+)\/100/', // 10/100 points
+        '/\|\s+\*\*Total\*\*\s+\|\s+([0-9]+)\s+\|/' // | **Total**                                 | 10    |
     ];
     
     foreach ($patterns as $pattern) {
