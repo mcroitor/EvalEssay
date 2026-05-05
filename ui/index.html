@@ -61,6 +61,11 @@
             margin-right: 2px;
             border-radius: 4px 4px 0 0;
             font-size: 14px;
+            font-family: inherit;
+            line-height: normal;
+            color: inherit;
+            text-align: inherit;
+            appearance: none;
             transition: background-color 0.2s;
         }
 
@@ -397,8 +402,8 @@
                     <label for="task">Task</label>
                     <div class="tab-container">
                         <div class="tabs">
-                            <div id="task-edit-tab" class="tab active" onclick="switchTab('task', 'edit')">✏️ Edit</div>
-                            <div id="task-preview-tab" class="tab" onclick="switchTab('task', 'preview')">👁️ Preview</div>
+                            <button type="button" id="task-edit-tab" class="tab active" onclick="switchTab('task', 'edit')">✏️ Edit</button>
+                            <button type="button" id="task-preview-tab" class="tab" onclick="switchTab('task', 'preview')">👁️ Preview</button>
                         </div>
                         <div id="task-edit-content" class="tab-content active">
                             <textarea id="task" name="task" rows="10" cols="50"></textarea>
@@ -411,8 +416,8 @@
                     <label for="rubric">Rubric</label>
                     <div class="tab-container">
                         <div class="tabs">
-                            <div id="rubric-edit-tab" class="tab active" onclick="switchTab('rubric', 'edit')">✏️ Edit</div>
-                            <div id="rubric-preview-tab" class="tab" onclick="switchTab('rubric', 'preview')">👁️ Preview</div>
+                            <button type="button" id="rubric-edit-tab" class="tab active" onclick="switchTab('rubric', 'edit')">✏️ Edit</button>
+                            <button type="button" id="rubric-preview-tab" class="tab" onclick="switchTab('rubric', 'preview')">👁️ Preview</button>
                         </div>
                         <div id="rubric-edit-content" class="tab-content active">
                             <textarea id="rubric" name="rubric" rows="10" cols="50"></textarea>
@@ -431,8 +436,8 @@
                 <label for="essay">Essay</label>
                 <div class="tab-container">
                     <div class="tabs">
-                        <div id="essay-edit-tab" class="tab active" onclick="switchTab('essay', 'edit')">✏️ Edit</div>
-                        <div id="essay-preview-tab" class="tab" onclick="switchTab('essay', 'preview')">👁️ Preview</div>
+                        <button type="button" id="essay-edit-tab" class="tab active" onclick="switchTab('essay', 'edit')">✏️ Edit</button>
+                        <button type="button" id="essay-preview-tab" class="tab" onclick="switchTab('essay', 'preview')">👁️ Preview</button>
                     </div>
                     <div id="essay-edit-content" class="tab-content active">
                         <textarea id="essay" name="essay" rows="10" cols="50"></textarea>
