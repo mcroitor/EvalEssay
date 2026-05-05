@@ -1,0 +1,16 @@
+# IW01: Writing a Simple Shell Script for Task Automation
+
+## Goal
+
+Learn to create and execute simple Shell scripts to automate routine tasks in the Linux operating system.
+
+## Task
+
+Automate one of the following tasks using a Shell script **Cleaning up temporary files**:
+
+1. The script should be named `cleanup.sh`;
+2. The script should take at least one argument: the path to the directory to clean up;
+3. The remaining arguments are optional and specify the types of files to delete (e.g., `.tmp`, `.log`);
+4. By default, files with the `.tmp` extension are deleted;
+5. At the end of the script execution, it should output the number of deleted files;
+6. The script should check that the specified directory exists and output appropriate error messages.

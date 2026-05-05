@@ -110,4 +110,9 @@ class Assessor
 
         return $response;
     }
+
+    public function setOption(string $key, $value): void
+    {
+        $this->options[$key] = $value;
+    }
 }

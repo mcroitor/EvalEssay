@@ -1,0 +1,9 @@
+{
+    "name": "Bash Scripting Basics Task",
+    "description": "task.md",
+    "rubric": "rubric.md",
+    "solution": "solution.md",
+    "input": "./input/",
+    "prompt_template": "prompt_template.md",
+    "output_format": "output_format.md"
+}
