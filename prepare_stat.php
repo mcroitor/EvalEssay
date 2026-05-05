@@ -224,7 +224,7 @@ foreach ($models as $model) {
             if($score !== $sum) {
                 \mc\Logger::stdout()->warn("Mismatch in criteria scores sum for assessment ID {$assessment['assessment_id']}, essay '{$assessment['essay_name']}'");
             }
-            updateScore($input_dir, $model, $assessment['essay_name'], $score, $sum);
+            updateScore($input_dir, $model, $assessment['essay_name'], $assessment['assessment_id'], $score, $sum);
         }
         $count = count($assessments);
         \mc\Logger::stdout()->info(" - " . $essay . " (" . $count . " assessments)");
