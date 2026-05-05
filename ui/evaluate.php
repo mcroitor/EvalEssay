@@ -66,6 +66,7 @@ $assessor->setOption("stream", false);
 try {
 
     $evaluation = $assessor->assessEssay($task, $essay);
+    header('Content-Type: application/json');
     echo json_encode(['evaluation' => htmlspecialchars($evaluation, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')]);
 } catch (Exception $e) {
     http_response_code(500);
