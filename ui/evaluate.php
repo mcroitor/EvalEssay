@@ -11,7 +11,22 @@ $logger = Logger::stderr();
 
 $ollamaUrl = "http://127.0.0.1:11434";
 
-$taskData = json_decode(file_get_contents('php://input'), true);
+header('Content-Type: application/json');
+
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed. Use POST.']);
+    exit;
+}
+
+$rawInput = file_get_contents('php://input');
+$taskData = json_decode($rawInput, true);
+
+if (json_last_error() !== JSON_ERROR_NONE || !is_array($taskData)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON request body.']);
+    exit;
+}
 
 $taskData["prompt_template"] = <<<EOT
 # Essay Task: {{task_name}}
