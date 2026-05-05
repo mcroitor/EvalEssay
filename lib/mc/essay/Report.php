@@ -165,14 +165,15 @@ CREATE TABLE assessments (
         ]);
     }
 
-    public function updateAssessmentScore(string $essayName, int $score, int $sum): void
+    public function updateAssessmentScore(string $essayName, int $assessmentId, int $score, int $sum): void
     {
         $this->db->update(
             'assessments',
             ['score' => $score, 'sum' => $sum],
             [
                 'model_name' => $this->modelName,
-                'essay_name' => $essayName
+                'essay_name' => $essayName,
+                'assessment_id' => $assessmentId
             ]
         );
     }
